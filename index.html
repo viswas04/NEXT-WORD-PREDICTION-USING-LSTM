@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next  Word Prediction</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap');
+
+        :root {
+            --bg-primary: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            --bg-secondary: #f7fff7;
+            --text-primary: #2d3047;
+            --accent-blue: #4361ee;
+            --accent-green: #4ecdc4;
+            --accent-pink: #ff6b6b;
+            --accent-yellow: #feca57;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .colorful-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            padding: 45px;
+            width: 100%;
+            max-width: 650px;
+            position: relative;
+            overflow: hidden;
+            transform: scale(0.9);
+            opacity: 0;
+            animation: popIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes popIn {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .container-overlay {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 90deg at 50% 50%, 
+                #ff6b6b, 
+                #4ecdc4, 
+                #4361ee, 
+                #feca57, 
+                #ff6b6b
+            );
+            opacity: 0.2;
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .app-header h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-pink));
+            -webkit-background-clip: text;
+            background-clip: text; /* Standard property for compatibility */
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .app-header .icon-brain {
+            font-size: 3rem;
+            background: linear-gradient(45deg, var(--accent-green), var(--accent-yellow));
+            -webkit-background-clip: text; 
+            background-clip: text; /* Standard property for compatibility */
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: all 0.3s ease;
+        }
+
+        textarea, 
+        input[type="number"] {
+            width: 100%;
+            padding: 15px 15px 15px 55px;
+            background: #f0f4f8;
+            border: 2px solid transparent;
+            border-radius: 15px;
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+            transition: all 0.4s ease;
+        }
+
+        textarea:focus, 
+        input[type="number"]:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 20px rgba(67, 97, 238, 0.2);
+        }
+
+        .predict-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-pink));
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(67, 97, 238, 0.3);
+        }
+
+        .result-section {
+            margin-top: 30px;
+            background: #f0f4f8;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid var(--accent-green);
+        }
+
+        .result-section strong {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .error-section {
+            background: #ffecb3;
+            border: 2px solid var(--accent-yellow);
+            color: #8a6d3b;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 14px;
+            color: rgba(45, 48, 71, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .colorful-container {
+                margin: 20px;
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="colorful-container">
+        <div class="container-overlay"></div>
+        
+        <div class="app-header">
+            <i class="fas fa-brain icon-brain"></i>
+            <h1>Next Word Predictor</h1>
+        </div>
+        
+        <form class="form-section" id="prediction-form" method="post" action="/predict">
+            <div class="input-group">
+                <label for="text-input">Enter your sentence:</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-comment-dots" style="color: var(--accent-green);"></i>
+                    <textarea id="text-input" name="text" placeholder="Type your sentence here...">{{ text|default('') }}</textarea>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="num-words">Number of words to predict:</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-hashtag" style="color: var(--accent-yellow);"></i>
+                    <input type="number" id="num-words" name="num_words" min="1" max="10" value="1">
+                </div>
+            </div>
+            
+            <button type="submit" class="predict-btn">
+                Predict Words
+            </button>
+        </form>
+        
+        {% if predicted_sentence %}
+        <div class="result-section">
+            <strong>Predicted Sentence:</strong>
+            <p id="predicted-text">{{ predicted_sentence }}</p>
+        </div>
+        {% elif error %}
+        <div class="result-section error-section">
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="footer">
+            <p>&copy; 2025 Vibrant Word Prediction</p>
+        </div>
+    </div>
+</body>
+</html>
